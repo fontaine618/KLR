@@ -44,22 +44,25 @@ KLR = function(
     
     # compute kernel
     if(standardize) x = scale(x)
+    x = scale(x, scale=F)
     KERNELS = c("gaussian", "polynomial")
     if(kernel == "gaussian"){
         D = as.matrix(dist(x))
         K = exp( - D ^ 2 / sigma2 )
+        beta = 1.
     }else if(kernel == "polynomial"){
         D = x %*% t(x)
-        K = ( 1 + D ) ^ d
+        K = ( 1 + D / sigma2 ) ^ d
     }else{
         stop(paste("only kernels", KERNELS, "are implemented"))
     }
+    K = scale(t(scale(K, scale=F)), scale=F)
     
     # find stepsize
     mat = t(K) %*% K /4 + lambda * K
     step_size = 1./max(eigen(mat)$values)
     
-    # fit with gradient descent
+    # fit using gradient descent
     alpha = matrix(0, n, 1)
     for(i in seq(max_iter)){
         # store previous
@@ -67,7 +70,7 @@ KLR = function(
         # compute gradient
         lin_pred = y * K %*% alpha
         prob = 1. / (1. + exp(lin_pred))
-        grad = - K %*% (y * prob) /n + lambda * K %*% alpha 
+        grad = - t(K) %*% (y * prob) / n + lambda * K %*%  alpha 
         alpha = alpha - step_size * grad
         # check convergence
         if(max(abs(alpha - alpha_prev)) < threshold) break
@@ -77,6 +80,7 @@ KLR = function(
     if(standardize) x = x * 
         matrix(attr(x, 'scaled:scale'), n, p, T) + 
         matrix(attr(x, 'scaled:center'), n, p, T)
+    x = x + matrix(attr(x, 'scaled:center'), n, p, T)
     out = list(x=x, alpha=alpha, kernel=kernel, sigma2=sigma2, d=d, standardize=standardize)
     class(out) = "KLR"
     return(out)
@@ -107,6 +111,8 @@ predict.KLR = function(KLRobj, newx){
         newx = (newx - matrix(attr(KLRobj$x, 'scaled:center'), n, p, T)) / 
             matrix(attr(KLRobj$x, 'scaled:scale'), n, p, T)
     }
+    KLRobj$x = scale(KLRobj$x, scale=F)
+    newx = newx - matrix(attr(KLRobj$x, 'scaled:center'), n, p, T)
     if(KLRobj$kernel == "gaussian"){
         D = matrix(0, n, m)
         for(i in seq(n)){
@@ -116,7 +122,7 @@ predict.KLR = function(KLRobj, newx){
         }
         K = exp( - D ^ 2 / KLRobj$sigma2 )
     }else if(KLRobj$kernel == "polynomial"){
-        D = KLRobj$x %*% t(newx)
+        D = KLRobj$x %*% t(newx) / KLRobj$sigma2
         K = ( 1 + D ) ^ KLRobj$d
     }
     
