@@ -2,7 +2,9 @@
 #' 
 #' @title Kernel Logistic Regression
 #' 
-#' @description This function does
+#' @description This function fit a kernel logistic regression model to the data (\code{y}, \code{x})
+#' using some pre-specified kernel. The return list contains the estimated kernel weights as well as
+#' the original data to perform predictions.
 #'
 #' @param y A \code{n x 1} column vector containing the responses (0-1).
 #' @param x A \code{n x p} matrix containing the covariates.
@@ -12,11 +14,22 @@
 #' @param d The degree in the \code{polynomial} kernel.
 #' @param threshold The convergence threshold.
 #' @param max_iter The maximum number of iterations.
+#' 
+#' @details The \code{gaussian} kernel has the following form:
+#' \deqn{exp(-||x-y||^2/sigma2).}
+#' The \code{polynomial} kernel has the following form:
+#' \deqn{(1+x'y/sigma2)^d.}
 #'
-#' @return
+#' @return A list containing:
+#' \describe{
+#' \item{\code{x}}{The original \code{x}.}
+#' \item{\code{alpha}}{The vector of fitted weights.}
+#' \item{\code{kernel}}{The kernel.}
+#' \item{\code{sigma2}}{The scale parameter.}
+#' \item{\code{d}}{The polynomial degree.}
+#' }
 #' @export
-#'
-#' @examples
+#' @seealso \link{predict.KLR}
 KLR = function(
     y,
     x,
@@ -102,20 +115,28 @@ KLR = function(
 #' 
 #' @description 
 #'
-#' @param KLRobj 
-#' @param newx 
+#' @param KLRobj An object of class \code{KLR}.
+#' @param newx The \code{m x p} matrix of observations at which to perform prediction.
 #'
-#' @return
-#' @export predict KLR
-#'
-#' @examples
-predict.KLR = function(KLRobj, newx){
+#' @return The \code{m x 1} vector of predicted probabilities.
+#' @method predict KLR
+#' @export 
+#' @seealso \link{KLR}
+predict.KLR = function(KLRobj, newx=KLRobj$x){
     # construct kernel
     m = nrow(newx)
     n = nrow(KLRobj$x)
     p = ncol(KLRobj$x)
     if(KLRobj$kernel == "gaussian"){
-        D = matrix(pdist::pdist(KLRobj$x, newx)@dist, n, m, F)
+        if(m==n){
+            if(all(KLRobj$x == newx)){
+                D = as.matrix(dist(KLRobj$x))
+            }else{
+                D = matrix(pdist::pdist(KLRobj$x, newx)@dist, n, m, T)
+            }
+        }else{
+            D = matrix(pdist::pdist(KLRobj$x, newx)@dist, n, m, T)
+        }
         K = exp( - D ^ 2 / KLRobj$sigma2 )
     }else if(KLRobj$kernel == "polynomial"){
         KLRobj$x = scale(KLRobj$x, scale=T)
@@ -134,7 +155,51 @@ predict.KLR = function(KLRobj, newx){
 
 
 
-
+#' @name contours
+#' 
+#' @title Produce level curve for a KLR object.
+#'
+#' @param KLRobj An object of class \code{KLR}.
+#' @param dims Dimensions for which t0 produce contours. Other dimensions are set the mean.
+#' @param res Resolution of the grid.
+#' @param levels Levels at which to produce level curves.
+#'
+#' @return A list containing the desired curves. Each list has a \code{level} attribute 
+#' stating the respective level as well as \code{x} and \code{y} attributes defining the curve.
+#' @export
+contours = function(
+    KLRobj,
+    dims = 1:2,
+    res = 100,
+    levels = c(0.5)
+){
+    if (res<11) stop("you should use res >10")
+    if(!(length(dims) == 2)) stop("only 2D contours are possible")
+    
+    # get ranges
+    x = KLRobj$x
+    xm = colMeans(x)
+    xrange = range(x[,dims[1]])
+    yrange = range(x[,dims[2]])
+    
+    # create mesh grid
+    xx = seq(xrange[1], xrange[2], length.out = res)
+    yy = seq(yrange[1], yrange[2], length.out = res)
+    newx_df = expand.grid(x=xx,y=yy)
+    newx = matrix(xm, res*res, ncol(x), T)
+    newx[,dims[1]] = newx_df$x
+    newx[,dims[2]] = newx_df$y
+    
+    # get predictions
+    preds = matrix(predict(KLRobj, newx), res, res)
+    
+    # produce contour
+    curves = grDevices::contourLines(
+            x=xx, y=yy, z=preds, levels=levels
+    )
+    
+    return(curves)
+}
 
 
 

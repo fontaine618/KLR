@@ -24,6 +24,27 @@ KLR(y, x, kernel = c("gaussian", "polynomial")[1], lambda = 0.01,
 
 \item{max_iter}{The maximum number of iterations.}
 }
+\value{
+A list containing:
+\describe{
+\item{\code{x}}{The original \code{x}.}
+\item{\code{alpha}}{The vector of fitted weights.}
+\item{\code{kernel}}{The kernel.}
+\item{\code{sigma2}}{The scale parameter.}
+\item{\code{d}}{The polynomial degree.}
+}
+}
 \description{
-This function does
+This function fit a kernel logistic regression model to the data (\code{y}, \code{x})
+using some pre-specified kernel. The return list contains the estimated kernel weights as well as
+the original data to perform predictions.
+}
+\details{
+The \code{gaussian} kernel has the following form:
+\deqn{exp(-||x-y||^2/sigma2).}
+The \code{polynomial} kernel has the following form:
+\deqn{(1+x'y/sigma2)^d.}
+}
+\seealso{
+\link{predict.KLR}
 }

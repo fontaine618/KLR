@@ -14,12 +14,12 @@ lambda = 0.012
 threshold=1.0e-6
 max_iter=1e5
 
-kernel = "polynomial"
-sigma2 = 20.
-d = 3
-lambda = 0.01
-threshold=1.0e-6
-max_iter=1e5
+# kernel = "polynomial"
+# sigma2 = 20.
+# d = 3
+# lambda = 0.01
+# threshold=1.0e-6
+# max_iter=1e5
 
 
 KLRobj = KLR(
@@ -33,10 +33,18 @@ KLRobj = KLR(
     max_iter=max_iter
 )
 
-preds = predict(KLRobj, newx)
+preds = predict(KLRobj)
 1 - mean((preds > .5) == y)
 
 
+
+res = 100
+dims = 1:2
+levels = c(0.5, 0.51)
+lvl = 0.5
+
+
+contours(KLRobj, 1:2, 100, 0.5)
 
 
 n = 100
