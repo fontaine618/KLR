@@ -27,7 +27,7 @@
 #' \item{\code{d}}{The polynomial degree.}
 #' }
 #' @export
-#' @seealso \link{predict.KLR}
+#' @seealso \link{predict.KLR}, \link{cv.KLR}, \link{contours.KLR}
 KLR = function(
     y,
     x,
@@ -54,7 +54,7 @@ KLR = function(
     # compute kernel
     KERNELS = c("gaussian", "polynomial")
     if(kernel == "gaussian"){
-        D = as.matrix(dist(x[1:120,]))
+        D = as.matrix(dist(x))
         K = exp( - D ^ 2 / sigma2 )
     }else if(kernel == "polynomial"){
         xs = scale(x, scale=T)
@@ -64,7 +64,6 @@ KLR = function(
         stop(paste("only kernels", KERNELS, "are implemented"))
     }
     K = scale(t(scale(K, scale=F)), scale=F)
-    print(K)
     
     # find stepsize
     mat = t(K) %*% K /4 + lambda * K
@@ -75,7 +74,7 @@ KLR = function(
         lin_pred = K %*% alpha
         penalty = lambda * t(alpha) %*% K %*% alpha
         loss = mean(- y * lin_pred + log( 1. + exp(lin_pred) ))
-        print(c(loss, penalty, loss+penalty))
+        #print(c(loss, penalty, loss+penalty))
         return((loss+ penalty)[1,1])
     }
     
@@ -151,7 +150,7 @@ predict.KLR = function(KLRobj, newx=KLRobj$x){
 
 
 
-#' @name contours
+#' @name contours.KLR
 #' 
 #' @title Produce level curve for a KLR object.
 #'
@@ -162,7 +161,7 @@ predict.KLR = function(KLRobj, newx=KLRobj$x){
 #'
 #' @return A list containing the desired curves. Each list has a \code{level} attribute stating the respective level as well as \code{x} and \code{y} attributes defining the curve.
 #' @export
-contours = function(
+contours.KLR = function(
     KLRobj,
     dims = 1:2,
     res = 100,

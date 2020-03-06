@@ -87,13 +87,23 @@ y = as.matrix(data_train[, 3])
 newx = x
 
 
+
 kernel = "gaussian"
 d = 3
 lambda=c(1.0,0.1,0.01,0.001)
 sigma2=c(5.0,2.0,1.0,0.5)
 threshold=1.0e-6
 max_iter=1e5
-n_folds=5
+n_folds=10
 
-parm = parms[1,]
-k = 1
+cv.KLR(
+    y=y,
+    x=x,
+    n_folds=n_folds,
+    kernel=kernel,
+    lambda=lambda,
+    sigma2=sigma2,
+    d=d,
+    threshold=threshold,
+    max_iter=max_iter
+)

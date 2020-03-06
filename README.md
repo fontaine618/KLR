@@ -28,3 +28,7 @@ Obtain level curves (contours):
 ```R
 contours(KLRobj, dims=1:2, res=100, levels=0.5)
 ```
+Perform cross-validation for the tuning parameters:
+```R
+cv.KLR(y, x, n_folds=10, lambda=c(0.001, 0.01, 0.1, 0.1), sigma2=c(0.1,0.5,1.0,2.0))
+```
