@@ -7,4 +7,5 @@ Author: Simon Fontaine
 Maintainer: Simon Fontaine <simfont@umich.edu>
 Description: Kernel Logistic Regression
 License: MIT
+Imports: pdist
 RoxygenNote: 6.1.1
