@@ -73,3 +73,27 @@ ggplot() +
         breaks=c(0.25,0.5,0.75),
         color='black'
     )
+
+
+
+
+
+
+
+data_train = read.csv("~/Dropbox/H2020/STATS601/601-HW4/data/classification_dat.txt", header=F, sep=" ")
+colnames(data_train) = c("X1", "X2", "class")
+x = as.matrix(data_train[, 1:2])
+y = as.matrix(data_train[, 3])
+newx = x
+
+
+kernel = "gaussian"
+d = 3
+lambda=c(1.0,0.1,0.01,0.001)
+sigma2=c(5.0,2.0,1.0,0.5)
+threshold=1.0e-6
+max_iter=1e5
+n_folds=5
+
+parm = parms[1,]
+k = 1

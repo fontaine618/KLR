@@ -56,19 +56,17 @@ KLR = function(
     # compute kernel
     KERNELS = c("gaussian", "polynomial")
     if(kernel == "gaussian"){
-        D = as.matrix(dist(x))
+        D = as.matrix(dist(x[1:120,]))
         K = exp( - D ^ 2 / sigma2 )
-        beta = 1.
     }else if(kernel == "polynomial"){
         xs = scale(x, scale=T)
         D = xs %*% t(xs)
-        # scales = sqrt(diag(D))
-        # D = t(D/scales)/scales
         K = ( 1 + D / sigma2 ) ^ d
     }else{
         stop(paste("only kernels", KERNELS, "are implemented"))
     }
     K = scale(t(scale(K, scale=F)), scale=F)
+    print(K)
     
     # find stepsize
     mat = t(K) %*% K /4 + lambda * K
