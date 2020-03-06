@@ -8,4 +8,5 @@ Maintainer: Simon Fontaine <simfont@umich.edu>
 Description: Kernel Logistic Regression
 License: MIT
 Imports: pdist
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
+Encoding: UTF-8

@@ -4,8 +4,16 @@
 \alias{KLR}
 \title{Kernel Logistic Regression}
 \usage{
-KLR(y, x, kernel = c("gaussian", "polynomial")[1], lambda = 0.01,
-  sigma2 = 1, d = 3, threshold = 1e-06, max_iter = 1e+05)
+KLR(
+  y,
+  x,
+  kernel = c("gaussian", "polynomial")[1],
+  lambda = 0.01,
+  sigma2 = 1,
+  d = 3,
+  threshold = 1e-06,
+  max_iter = 1e+05
+)
 }
 \arguments{
 \item{y}{A \code{n x 1} column vector containing the responses (0-1).}
