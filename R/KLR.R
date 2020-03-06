@@ -2,9 +2,7 @@
 #' 
 #' @title Kernel Logistic Regression
 #' 
-#' @description This function fit a kernel logistic regression model to the data (\code{y}, \code{x})
-#' using some pre-specified kernel. The return list contains the estimated kernel weights as well as
-#' the original data to perform predictions.
+#' @description This function fit a kernel logistic regression model to the data (\code{y}, \code{x}) using some pre-specified kernel. The return list contains the estimated kernel weights as well as the original data to perform predictions.
 #'
 #' @param y A \code{n x 1} column vector containing the responses (0-1).
 #' @param x A \code{n x p} matrix containing the covariates.
@@ -162,8 +160,7 @@ predict.KLR = function(KLRobj, newx=KLRobj$x){
 #' @param res Resolution of the grid.
 #' @param levels Levels at which to produce level curves.
 #'
-#' @return A list containing the desired curves. Each list has a \code{level} attribute 
-#' stating the respective level as well as \code{x} and \code{y} attributes defining the curve.
+#' @return A list containing the desired curves. Each list has a \code{level} attribute stating the respective level as well as \code{x} and \code{y} attributes defining the curve.
 #' @export
 contours = function(
     KLRobj,
