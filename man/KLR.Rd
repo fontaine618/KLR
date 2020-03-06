@@ -39,7 +39,7 @@ cv.KLR(
 
 \item{sigma2}{The scale(s) in the \code{gaussian} and \code{polynomial} kernel. See details.}
 
-\item{d}{The degree in the \code{polynomial} kernel.}
+\item{d}{The degree(s) in the \code{polynomial} kernel.}
 
 \item{threshold}{The convergence threshold.}
 
@@ -60,8 +60,9 @@ A list containing:
 A list containing:
 \describe{
 \item{\code{mpe}}{The mean prediction error across all folds for all combinations of parameters.}
-\item{\code{lambda_min}}{The selected value of \code{lambda}}
-\item{\code{sigma2_min}}{The selected value of \code{sigma2}}
+\item{\code{lambda_min}}{The selected value of \code{lambda}.}
+\item{\code{sigma2_min}}{The selected value of \code{sigma2}.}
+\item{\code{d_min}}{The selected value of \code{d}.}
 }
 }
 \description{

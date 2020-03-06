@@ -10,7 +10,7 @@
 #' @param kernel The kernel to use. Either \code{gaussian} (default) or \code{polynomial}.
 #' @param lambda The regularization parameter(s).
 #' @param sigma2 The scale(s) in the \code{gaussian} and \code{polynomial} kernel. See details.
-#' @param d The degree in the \code{polynomial} kernel.
+#' @param d The degree(s) in the \code{polynomial} kernel.
 #' @param threshold The convergence threshold.
 #' @param max_iter The maximum number of iterations.
 #' 
@@ -22,8 +22,9 @@
 #' @return A list containing:
 #' \describe{
 #' \item{\code{mpe}}{The mean prediction error across all folds for all combinations of parameters.}
-#' \item{\code{lambda_min}}{The selected value of \code{lambda}}
-#' \item{\code{sigma2_min}}{The selected value of \code{sigma2}}
+#' \item{\code{lambda_min}}{The selected value of \code{lambda}.}
+#' \item{\code{sigma2_min}}{The selected value of \code{sigma2}.}
+#' \item{\code{d_min}}{The selected value of \code{d}.}
 #' }
 #' @export
 #' @seealso \link{KLR}
@@ -39,7 +40,7 @@ cv.KLR = function(
     max_iter=1e5
 ){
     # parameter grid
-    parms = expand.grid(lambda = lambda, sigma2=sigma2)
+    parms = expand.grid(lambda = lambda, sigma2=sigma2, d=d)
     
     # prepare folds
     N = nrow(x)
@@ -50,20 +51,22 @@ cv.KLR = function(
     mpe = t(sapply(seq(nrow(parms)), function(i){
         lam = parms$lambda[i]
         sig = parms$sigma2[i]
+        dd = parms$d[i]
         mp = mean(sapply(seq(n_folds), function(k){
             id_in = folds == k
             fit = KLR(
                 y[!id_in, , drop=F], x[!id_in, , drop=F], kernel, 
-                lam, sig, d, threshold, max_iter
+                lam, sig, dd, threshold, max_iter
             )
             pred = predict(fit, x[id_in, , drop=F]) > 0.5
             1-mean(pred == y[id_in,,drop=F])
         }, simplify="array"))
-        return(c(lambda=lam, sigma2=sig,mpe=mp))
+        return(c(lambda=lam, sigma2=sig, d=dd, mpe=mp))
     }, simplify="array"))
     
     # get min
-    i = which.min(mpe[,3])
+    i = which.min(mpe[,4])
     
-    list(mpe = mpe, lambda_min = parms$lambda[i], sigma2_min = parms$sigma2[i])
+    #return
+    list(mpe = mpe, lambda_min = parms$lambda[i], sigma2_min = parms$sigma2[i], d_min = parms$d[i])
 }
