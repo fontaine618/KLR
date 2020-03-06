@@ -5,8 +5,7 @@
 \title{Kernel Logistic Regression}
 \usage{
 KLR(y, x, kernel = c("gaussian", "polynomial")[1], lambda = 0.01,
-  sigma2 = 1, d = 3, threshold = 1e-06, max_iter = 1e+05,
-  standardize = FALSE)
+  sigma2 = 1, d = 3, threshold = 1e-06, max_iter = 1e+05)
 }
 \arguments{
 \item{y}{A \code{n x 1} column vector containing the responses (0-1).}
@@ -17,15 +16,13 @@ KLR(y, x, kernel = c("gaussian", "polynomial")[1], lambda = 0.01,
 
 \item{lambda}{The regularization parameter.}
 
-\item{sigma2}{The scale in the \code{gaussian} kernel.}
+\item{sigma2}{The scale in the \code{gaussian} and \code{polynomial} kernel. See details.}
 
 \item{d}{The degree in the \code{polynomial} kernel.}
 
 \item{threshold}{The convergence threshold.}
 
 \item{max_iter}{The maximum number of iterations.}
-
-\item{standardize}{}
 }
 \description{
 This function does

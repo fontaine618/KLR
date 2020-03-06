@@ -8,11 +8,10 @@
 #' @param x A \code{n x p} matrix containing the covariates.
 #' @param kernel The kernel to use. Either \code{gaussian} (default) or \code{polynomial}.
 #' @param lambda The regularization parameter.
-#' @param sigma2 The scale in the \code{gaussian} kernel.
+#' @param sigma2 The scale in the \code{gaussian} and \code{polynomial} kernel. See details.
 #' @param d The degree in the \code{polynomial} kernel.
 #' @param threshold The convergence threshold.
 #' @param max_iter The maximum number of iterations.
-#' @param standardize 
 #'
 #' @return
 #' @export
@@ -26,8 +25,7 @@ KLR = function(
     sigma2=1.0,
     d=3,
     threshold=1.0e-6,
-    max_iter=1e5,
-    standardize=FALSE
+    max_iter=1e5
 ){
     # inputs check
     if(is.vector(y)) y = matrix(y, length(y), 1)
@@ -43,15 +41,16 @@ KLR = function(
     vnames = colnames(x)
     
     # compute kernel
-    if(standardize) x = scale(x)
-    x = scale(x, scale=F)
     KERNELS = c("gaussian", "polynomial")
     if(kernel == "gaussian"){
         D = as.matrix(dist(x))
         K = exp( - D ^ 2 / sigma2 )
         beta = 1.
     }else if(kernel == "polynomial"){
-        D = x %*% t(x)
+        xs = scale(x, scale=T)
+        D = xs %*% t(xs)
+        # scales = sqrt(diag(D))
+        # D = t(D/scales)/scales
         K = ( 1 + D / sigma2 ) ^ d
     }else{
         stop(paste("only kernels", KERNELS, "are implemented"))
@@ -62,26 +61,35 @@ KLR = function(
     mat = t(K) %*% K /4 + lambda * K
     step_size = 1./max(eigen(mat)$values)
     
+    # obj function
+    obj = function(alpha){
+        lin_pred = K %*% alpha
+        penalty = lambda * t(alpha) %*% K %*% alpha
+        loss = mean(- y * lin_pred + log( 1. + exp(lin_pred) ))
+        print(c(loss, penalty, loss+penalty))
+        return((loss+ penalty)[1,1])
+    }
+    
     # fit using gradient descent
     alpha = matrix(0, n, 1)
+    obj_val_prev = obj(alpha)
     for(i in seq(max_iter)){
         # store previous
         alpha_prev = alpha
         # compute gradient
         lin_pred = y * K %*% alpha
         prob = 1. / (1. + exp(lin_pred))
-        grad = - t(K) %*% (y * prob) / n + lambda * K %*%  alpha 
+        grad = - K %*% (y * prob) / n + lambda * K %*%  alpha 
         alpha = alpha - step_size * grad
         # check convergence
-        if(max(abs(alpha - alpha_prev)) < threshold) break
+        obj_val = obj(alpha)
+        if(abs(obj_val - obj_val_prev)/obj_val < threshold) break
+        #if(max(abs(alpha - alpha_prev)) < threshold) break
+        obj_val_prev = obj_val
     }
     
     # return
-    if(standardize) x = x * 
-        matrix(attr(x, 'scaled:scale'), n, p, T) + 
-        matrix(attr(x, 'scaled:center'), n, p, T)
-    x = x + matrix(attr(x, 'scaled:center'), n, p, T)
-    out = list(x=x, alpha=alpha, kernel=kernel, sigma2=sigma2, d=d, standardize=standardize)
+    out = list(x=x, alpha=alpha, kernel=kernel, sigma2=sigma2, d=d)
     class(out) = "KLR"
     return(out)
 }
@@ -98,7 +106,7 @@ KLR = function(
 #' @param newx 
 #'
 #' @return
-#' @export
+#' @export predict KLR
 #'
 #' @examples
 predict.KLR = function(KLRobj, newx){
@@ -106,24 +114,15 @@ predict.KLR = function(KLRobj, newx){
     m = nrow(newx)
     n = nrow(KLRobj$x)
     p = ncol(KLRobj$x)
-    if(KLRobj$standardize) {
-        KLRobj$x = scale(KLRobj$x)
-        newx = (newx - matrix(attr(KLRobj$x, 'scaled:center'), n, p, T)) / 
-            matrix(attr(KLRobj$x, 'scaled:scale'), n, p, T)
-    }
-    KLRobj$x = scale(KLRobj$x, scale=F)
-    newx = newx - matrix(attr(KLRobj$x, 'scaled:center'), n, p, T)
     if(KLRobj$kernel == "gaussian"){
-        D = matrix(0, n, m)
-        for(i in seq(n)){
-            for(j in seq(m)){
-                D[i, j] = norm(KLRobj$x[i, ] - newx[j, ], "2")
-            }
-        }
+        D = matrix(pdist::pdist(KLRobj$x, newx)@dist, n, m, F)
         K = exp( - D ^ 2 / KLRobj$sigma2 )
     }else if(KLRobj$kernel == "polynomial"){
-        D = KLRobj$x %*% t(newx) / KLRobj$sigma2
-        K = ( 1 + D ) ^ KLRobj$d
+        KLRobj$x = scale(KLRobj$x, scale=T)
+        newx = (newx - matrix(attr(KLRobj$x, 'scaled:center'), m, p, T)) /
+            matrix(attr(KLRobj$x, 'scaled:scale'), m, p, T)
+        D = KLRobj$x %*% t(newx)
+        K = ( 1 + D / KLRobj$sigma2) ^ KLRobj$d
     }
     
     # compute predictors
