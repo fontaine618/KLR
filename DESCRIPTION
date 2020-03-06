@@ -1,0 +1,10 @@
+Package: KLR
+Type: Package
+Title: Kernel Logistic Regression
+Version: 1.0
+Date: 2020-03-05
+Author: Simon Fontaine
+Maintainer: Simon Fontaine <simfont@umich.edu>
+Description: Kernel Logistic Regression
+License: MIT
+RoxygenNote: 6.1.1
