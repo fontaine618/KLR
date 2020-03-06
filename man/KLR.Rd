@@ -35,9 +35,7 @@ A list containing:
 }
 }
 \description{
-This function fit a kernel logistic regression model to the data (\code{y}, \code{x})
-using some pre-specified kernel. The return list contains the estimated kernel weights as well as
-the original data to perform predictions.
+This function fit a kernel logistic regression model to the data (\code{y}, \code{x}) using some pre-specified kernel. The return list contains the estimated kernel weights as well as the original data to perform predictions.
 }
 \details{
 The \code{gaussian} kernel has the following form:

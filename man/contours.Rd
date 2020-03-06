@@ -16,8 +16,7 @@ contours(KLRobj, dims = 1:2, res = 100, levels = c(0.5))
 \item{levels}{Levels at which to produce level curves.}
 }
 \value{
-A list containing the desired curves. Each list has a \code{level} attribute 
-stating the respective level as well as \code{x} and \code{y} attributes defining the curve.
+A list containing the desired curves. Each list has a \code{level} attribute stating the respective level as well as \code{x} and \code{y} attributes defining the curve.
 }
 \description{
 Produce level curve for a KLR object.
