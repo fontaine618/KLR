@@ -17,6 +17,7 @@ Fit the model:
 ```R
 library(KLR)
 KLRobj = KLR(y, x, kernel="gaussian", lambda=0.001, sigma2=2.0)
+KLRobj = KLR(y, x, kernel="polynomial", lambda=0.001, sigma2=2.0, d=3)
 ```
 Obtain predictions on the original data or on new data:
 ```R
