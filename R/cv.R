@@ -1,4 +1,4 @@
-#' @name KLR
+#' @name cv.KLR
 #' 
 #' @title Cross-validation on Kernel Logistic Regression
 #' 
