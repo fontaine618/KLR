@@ -54,7 +54,7 @@ KLR = function(
     # compute kernel
     KERNELS = c("gaussian", "polynomial")
     if(kernel == "gaussian"){
-        D = as.matrix(dist(x))
+        D = as.matrix(stats::dist(x))
         K = exp( - D ^ 2 / sigma2 )
     }else if(kernel == "polynomial"){
         xs = scale(x, scale=T)
@@ -108,41 +108,42 @@ KLR = function(
 #' 
 #' @title Predict using a KLR fit
 #' 
-#' @description 
+#' @description Prediction
 #'
-#' @param KLRobj An object of class \code{KLR}.
+#' @param object An object of class \code{KLR}.
 #' @param newx The \code{m x p} matrix of observations at which to perform prediction.
+#' @param ... Extra arguments (not used).
 #'
 #' @return The \code{m x 1} vector of predicted probabilities.
 #' @method predict KLR
 #' @export 
 #' @seealso \link{KLR}
-predict.KLR = function(KLRobj, newx=KLRobj$x){
+predict.KLR = function(object, newx=object$x, ...){
     # construct kernel
     m = nrow(newx)
-    n = nrow(KLRobj$x)
-    p = ncol(KLRobj$x)
-    if(KLRobj$kernel == "gaussian"){
+    n = nrow(object$x)
+    p = ncol(object$x)
+    if(object$kernel == "gaussian"){
         if(m==n){
-            if(all(KLRobj$x == newx)){
-                D = as.matrix(dist(KLRobj$x))
+            if(all(object$x == newx)){
+                D = as.matrix(stats::dist(object$x))
             }else{
-                D = matrix(pdist::pdist(KLRobj$x, newx)@dist, n, m, T)
+                D = matrix(pdist::pdist(object$x, newx)@dist, n, m, T)
             }
         }else{
-            D = matrix(pdist::pdist(KLRobj$x, newx)@dist, n, m, T)
+            D = matrix(pdist::pdist(object$x, newx)@dist, n, m, T)
         }
-        K = exp( - D ^ 2 / KLRobj$sigma2 )
-    }else if(KLRobj$kernel == "polynomial"){
-        KLRobj$x = scale(KLRobj$x, scale=T)
-        newx = (newx - matrix(attr(KLRobj$x, 'scaled:center'), m, p, T)) /
-            matrix(attr(KLRobj$x, 'scaled:scale'), m, p, T)
-        D = KLRobj$x %*% t(newx)
-        K = ( 1 + D / KLRobj$sigma2) ^ KLRobj$d
+        K = exp( - D ^ 2 / object$sigma2 )
+    }else if(object$kernel == "polynomial"){
+        object$x = scale(object$x, scale=T)
+        newx = (newx - matrix(attr(object$x, 'scaled:center'), m, p, T)) /
+            matrix(attr(object$x, 'scaled:scale'), m, p, T)
+        D = object$x %*% t(newx)
+        K = ( 1 + D / object$sigma2) ^ object$d
     }
     
     # compute predictors
-    f = t(K) %*% KLRobj$alpha
+    f = t(K) %*% object$alpha
     p = 1. / (1. + exp(-f))
     
     return(p)
@@ -154,7 +155,7 @@ predict.KLR = function(KLRobj, newx=KLRobj$x){
 #' 
 #' @title Produce level curve for a KLR object.
 #'
-#' @param KLRobj An object of class \code{KLR}.
+#' @param object An object of class \code{KLR}.
 #' @param dims Dimensions for which t0 produce contours. Other dimensions are set the mean.
 #' @param res Resolution of the grid.
 #' @param levels Levels at which to produce level curves.
@@ -162,7 +163,7 @@ predict.KLR = function(KLRobj, newx=KLRobj$x){
 #' @return A list containing the desired curves. Each list has a \code{level} attribute stating the respective level as well as \code{x} and \code{y} attributes defining the curve.
 #' @export
 contours.KLR = function(
-    KLRobj,
+    object,
     dims = 1:2,
     res = 100,
     levels = c(0.5)
@@ -171,7 +172,7 @@ contours.KLR = function(
     if(!(length(dims) == 2)) stop("only 2D contours are possible")
     
     # get ranges
-    x = KLRobj$x
+    x = object$x
     xm = colMeans(x)
     xrange = range(x[,dims[1]])
     yrange = range(x[,dims[2]])
@@ -185,7 +186,7 @@ contours.KLR = function(
     newx[,dims[2]] = newx_df$y
     
     # get predictions
-    preds = matrix(predict(KLRobj, newx), res, res)
+    preds = matrix(predict.KLR(object, newx), res, res)
     
     # produce contour
     curves = grDevices::contourLines(

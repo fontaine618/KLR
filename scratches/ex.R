@@ -94,7 +94,7 @@ lambda=c(1.0,0.1,0.01,0.001)
 sigma2=c(5.0,2.0,1.0,0.5)
 threshold=1.0e-6
 max_iter=1e5
-n_folds=10
+n_folds=3
 
 cv.KLR(
     y=y,

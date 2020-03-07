@@ -4,18 +4,20 @@
 \alias{predict.KLR}
 \title{Predict using a KLR fit}
 \usage{
-\method{predict}{KLR}(KLRobj, newx = KLRobj$x)
+\method{predict}{KLR}(object, newx = object$x, ...)
 }
 \arguments{
-\item{KLRobj}{An object of class \code{KLR}.}
+\item{object}{An object of class \code{KLR}.}
 
 \item{newx}{The \code{m x p} matrix of observations at which to perform prediction.}
+
+\item{...}{Extra arguments (not used).}
 }
 \value{
 The \code{m x 1} vector of predicted probabilities.
 }
 \description{
-
+Prediction
 }
 \seealso{
 \link{KLR}

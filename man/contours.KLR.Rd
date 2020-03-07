@@ -4,10 +4,10 @@
 \alias{contours.KLR}
 \title{Produce level curve for a KLR object.}
 \usage{
-contours.KLR(KLRobj, dims = 1:2, res = 100, levels = c(0.5))
+contours.KLR(object, dims = 1:2, res = 100, levels = c(0.5))
 }
 \arguments{
-\item{KLRobj}{An object of class \code{KLR}.}
+\item{object}{An object of class \code{KLR}.}
 
 \item{dims}{Dimensions for which t0 produce contours. Other dimensions are set the mean.}
 

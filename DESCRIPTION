@@ -5,8 +5,8 @@ Version: 1.0
 Date: 2020-03-05
 Author: Simon Fontaine
 Maintainer: Simon Fontaine <simfont@umich.edu>
-Description: Kernel Logistic Regression
-License: MIT
-Imports: pdist
+Description: Kernel Logistic Regression for Gaussian and Polynomial kernels. Performs prediction and cross-validation to tune parameters.
+License: MIT + file LICENSE
+Imports: pdist, parallel
 RoxygenNote: 7.0.2
 Encoding: UTF-8
