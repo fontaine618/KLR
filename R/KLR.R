@@ -85,9 +85,11 @@ KLR = function(
         # store previous
         alpha_prev = alpha
         # compute gradient
-        lin_pred = y * K %*% alpha
-        prob = 1. / (1. + exp(lin_pred))
-        grad = - K %*% (y * prob) / n + lambda * K %*%  alpha 
+        lin_pred = K %*% alpha
+        #prob = 1. / (1. + exp(lin_pred))
+        prob = 1. / (1. + exp(-lin_pred))
+        #grad = - K %*% (y * prob) / n + lambda * K %*%  alpha 
+        grad = - K %*% (y - prob - lambda*alpha)
         alpha = alpha - step_size * grad
         # check convergence
         obj_val = obj(alpha)
