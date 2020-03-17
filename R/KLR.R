@@ -57,7 +57,7 @@ KLR = function(
         D = as.matrix(stats::dist(x))
         K = exp( - D ^ 2 / sigma2 )
     }else if(kernel == "polynomial"){
-        xs = scale(x, scale=T)
+        xs = scale(x, scale=F)
         D = xs %*% t(xs)
         K = ( 1 + D / sigma2 ) ^ d
     }else{
@@ -67,7 +67,7 @@ KLR = function(
     
     # find stepsize
     mat = t(K) %*% K /4 + lambda * K
-    step_size = 1./max(eigen(mat)$values)
+    step_size = 1./max(Re(eigen(mat)$values))
     
     # obj function
     obj = function(alpha){
@@ -137,9 +137,9 @@ predict.KLR = function(object, newx=object$x, ...){
         }
         K = exp( - D ^ 2 / object$sigma2 )
     }else if(object$kernel == "polynomial"){
-        object$x = scale(object$x, scale=T)
-        newx = (newx - matrix(attr(object$x, 'scaled:center'), m, p, T)) /
-            matrix(attr(object$x, 'scaled:scale'), m, p, T)
+        object$x = scale(object$x, scale=F)
+        newx = (newx - matrix(attr(object$x, 'scaled:center'), m, p, T)) # /
+            # matrix(attr(object$x, 'scaled:scale'), m, p, T)
         D = object$x %*% t(newx)
         K = ( 1 + D / object$sigma2) ^ object$d
     }
