@@ -64,31 +64,16 @@ cv.KLR = function(
         mp = mean(sapply(seq(n_folds), function(k){
             id_in = folds == k
             fit = KLR::KLR(
-                y[!id_in, , drop=F], x[!id_in, , drop=F], kernel,
+                y[!id_in], x[!id_in, , drop=F], kernel,
                 lam, sig, dd, threshold, max_iter
             )
-            pred = predict.KLR(fit, x[id_in, , drop=F]) > 0.5
-            1-mean(pred == y[id_in,,drop=F])
+            pred = predict(fit, x[id_in, , drop=F]) > 0.5
+            1-mean(pred == y[id_in])
         }, simplify="array"))
         return(c(lambda=lam, sigma2=sig, d=dd, mpe=mp))
     }))
     parallel::stopCluster(cl)
-    
-    # mpe = t(sapply(seq(nrow(parms)), function(i){
-    #     lam = parms$lambda[i]
-    #     sig = parms$sigma2[i]
-    #     dd = parms$d[i]
-    #     mp = mean(sapply(seq(n_folds), function(k){
-    #         id_in = folds == k
-    #         fit = KLR(
-    #             y[!id_in, , drop=F], x[!id_in, , drop=F], kernel, 
-    #             lam, sig, dd, threshold, max_iter
-    #         )
-    #         pred = predict(fit, x[id_in, , drop=F]) > 0.5
-    #         1-mean(pred == y[id_in,,drop=F])
-    #     }, simplify="array"))
-    #     return(c(lambda=lam, sigma2=sig, d=dd, mpe=mp))
-    # }, simplify="array"))
+
     
     # get min
     i = which.min(mpe[,4])

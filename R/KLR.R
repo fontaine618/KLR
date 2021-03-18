@@ -66,40 +66,53 @@ KLR = function(
     K = scale(t(scale(K, scale=F)), scale=F)
     
     # find stepsize
-    mat = t(K) %*% K /4 + lambda * K
-    step_size = 1./max(Re(eigen(mat)$values))
+    mat = t(K) %*% K / (4*n) + lambda * K
+    lr = 1./max(Re(eigen(mat)$values))
     
     # obj function
-    obj = function(alpha){
-        lin_pred = K %*% alpha
-        penalty = lambda * t(alpha) %*% K %*% alpha
+    objective = function(alpha){
+        lin_pred = linear_predictors(alpha)
+        penalty = 0.5 * lambda * t(alpha) %*% K %*% alpha
         loss = mean(- y * lin_pred + log( 1. + exp(lin_pred) ))
-        #print(c(loss, penalty, loss+penalty))
-        return((loss+ penalty)[1,1])
+        return((loss + penalty)[1,1])
+    }
+    
+    # linear predictor
+    linear_predictors = function(alpha){
+        lin_pred = K %*% alpha
+        return(lin_pred)
+    }
+    
+    # fitted probability
+    probabilities = function(alpha){
+        lin_pred = linear_predictors(alpha)
+        proba = 1. / (1. + exp(-lin_pred))
+        return(proba)
+    }
+    
+    # gradient wrt alpha
+    gradients = function(alpha){
+        proba = probabilities(alpha)
+        g_alpha = - t(K) %*% ((y - proba) / n - lambda * alpha)
+        return(g_alpha)
     }
     
     # fit using gradient descent
     alpha = matrix(0, n, 1)
-    obj_val_prev = obj(alpha)
+    obj_val_prev = objective(alpha)
     for(i in seq(max_iter)){
-        # store previous
-        alpha_prev = alpha
         # compute gradient
-        lin_pred = K %*% alpha
-        #prob = 1. / (1. + exp(lin_pred))
-        prob = 1. / (1. + exp(-lin_pred))
-        #grad = - K %*% (y * prob) / n + lambda * K %*%  alpha 
-        grad = - K %*% (y - prob - lambda*alpha)
-        alpha = alpha - step_size * grad
+        grad = gradients(alpha)
+        # update
+        alpha = alpha - lr * grad
         # check convergence
-        obj_val = obj(alpha)
+        obj_val = objective(alpha)
         if(abs(obj_val - obj_val_prev)/obj_val < threshold) break
-        #if(max(abs(alpha - alpha_prev)) < threshold) break
         obj_val_prev = obj_val
     }
     
     # return
-    out = list(x=x, alpha=alpha, kernel=kernel, sigma2=sigma2, d=d)
+    out = list(x=x, alpha=alpha, kernel=kernel, sigma2=sigma2, d=d, lambda=lambda, n_iter=i)
     class(out) = "KLR"
     return(out)
 }
@@ -137,10 +150,9 @@ predict.KLR = function(object, newx=object$x, ...){
         }
         K = exp( - D ^ 2 / object$sigma2 )
     }else if(object$kernel == "polynomial"){
-        object$x = scale(object$x, scale=F)
-        newx = (newx - matrix(attr(object$x, 'scaled:center'), m, p, T)) # /
-            # matrix(attr(object$x, 'scaled:scale'), m, p, T)
-        D = object$x %*% t(newx)
+        xs = scale(object$x, scale=F)
+        newx = (newx - matrix(attr(xs, 'scaled:center'), m, p, T))
+        D = xs %*% t(newx)
         K = ( 1 + D / object$sigma2) ^ object$d
     }
     
@@ -158,19 +170,19 @@ predict.KLR = function(object, newx=object$x, ...){
 #' @title Produce level curve for a KLR object.
 #'
 #' @param object An object of class \code{KLR}.
-#' @param dims Dimensions for which t0 produce contours. Other dimensions are set the mean.
-#' @param res Resolution of the grid.
-#' @param levels Levels at which to produce level curves.
+#' @param dims Dimensions for which t0 produce contours. Other dimensions are set to the mean.
+#' @param res Resolution of the grid. Default is 100.
+#' @param level Level at which to produce level curve. Default is 0.5.
 #'
-#' @return A list containing the desired curves. Each list has a \code{level} attribute stating the respective level as well as \code{x} and \code{y} attributes defining the curve.
+#' @return The decision boundary at specified level as a list of curves
 #' @export
 contours.KLR = function(
     object,
     dims = 1:2,
     res = 100,
-    levels = c(0.5)
+    levels = 0.5
 ){
-    if (res<11) stop("you should use res >10")
+    if (res<11) stop("you should use res > 10")
     if(!(length(dims) == 2)) stop("only 2D contours are possible")
     
     # get ranges
@@ -191,11 +203,11 @@ contours.KLR = function(
     preds = matrix(predict.KLR(object, newx), res, res)
     
     # produce contour
-    curves = grDevices::contourLines(
+    contours = grDevices::contourLines(
             x=xx, y=yy, z=preds, levels=levels
     )
     
-    return(curves)
+    return(contours)
 }
 
 
