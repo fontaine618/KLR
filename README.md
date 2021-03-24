@@ -35,6 +35,11 @@ plot(x[, 1], x[, 2], col=y)
 sapply(contours, function(c) lines(c$x, c$y, type="l"))
 ```
 
+Get predictions using the `predict` base function:
+```R
+predict(KLRobj, newdata) # returns probabilities
+```
+
 Perform cross-validation for the tuning parameters:
 ```R
 cv.KLR(y, x, n_folds=10, lambda=c(0.001, 0.01, 0.1, 1), sigma2=c(0.1,0.5,1.0,2.0))
